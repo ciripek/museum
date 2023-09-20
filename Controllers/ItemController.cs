@@ -73,12 +73,13 @@ public class ItemController : Controller
     [HttpPost]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Edit(int id,
-        [Bind("Id,Name,Description,Obtained,Image,CreatedAt,UpdatedAt")] Item item)
+        [Bind("Id,Name,Description,Obtained,Image,CreatedAt,UpdatedAt")]
+        Item item)
     {
         if (id != item.Id) return NotFound();
 
         if (!ModelState.IsValid) return View(item);
-        
+
         try
         {
             _context.Update(item);
@@ -92,7 +93,6 @@ public class ItemController : Controller
         }
 
         return RedirectToAction(nameof(Index));
-
     }
 
     // GET: Item/Delete/5
