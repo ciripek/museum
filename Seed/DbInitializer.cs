@@ -27,7 +27,7 @@ internal class DbInitializer
 
         var labels = new Faker<Label>()
             .RuleFor(label => label.Name, f => f.Random.Word())
-            .RuleFor(label => label.Color, faker => faker.Random.Hexadecimal())
+            .RuleFor(label => label.Color, faker => faker.Internet.Color())
             .RuleFor(label => label.Display, faker => faker.Random.Bool())
             .RuleFor(label => label.Items, () => new List<Item>())
             .Generate(15);

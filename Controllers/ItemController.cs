@@ -31,6 +31,7 @@ public class ItemController : Controller
 
         var item = await _context
             .Item
+            .Include(item1 => item1.Labels)
             .Include(item1 => item1.Comments)!
             .ThenInclude(comment => comment.ApplicationUser)
             .Where(item1 => item1.Id == id)
