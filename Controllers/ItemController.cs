@@ -18,7 +18,9 @@ public class ItemController : Controller
     public async Task<IActionResult> Index()
     {
         return _context.Item != null
-            ? View(await _context.Item.ToListAsync())
+            ? View(await _context.Item
+                .OrderByDescending(item => item.Obtained)
+                .ToListAsync())
             : Problem("Entity set 'ApplicationDbContext.Item'  is null.");
     }
 
