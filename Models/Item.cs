@@ -15,8 +15,8 @@ public class Item : IBaseEntity
 
     public string? Image { get; set; }
 
-    public ICollection<Comment>? Comments { get; set; }
-    public ICollection<Label>? Labels { get; set; }
+    public ICollection<Comment> Comments { get; set; } = new List<Comment>();
+    public ICollection<Label> Labels { get; set; } = new List<Label>();
 
     public DateTime CreatedAt { get; set; }
     public DateTime UpdatedAt { get; set; }

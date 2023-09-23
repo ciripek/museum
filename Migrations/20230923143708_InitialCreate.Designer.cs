@@ -12,7 +12,7 @@ using museum.Data;
 namespace museum.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20230920172420_InitialCreate")]
+    [Migration("20230923143708_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
