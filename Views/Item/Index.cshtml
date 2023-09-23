@@ -1,3 +1,6 @@
+@using X.PagedList.Mvc.Core
+@using X.PagedList.Web.Common
+@using X.PagedList
 @model IEnumerable<Item>
 
 @{
@@ -9,6 +12,15 @@
 <p>
     <a asp-action="Create">Create New</a>
 </p>
+
+@Html.PagedListPager(Model as IPagedList, page => Url.Action("Index", new { page }),
+    new PagedListRenderOptions
+    {
+        UlElementClasses = new[] { "pagination", "justify-content-center" },
+        LiElementClasses = new[] { "page-item" },
+        PageClasses = new[] { "page-link" }
+    })
+
 <table class="table">
     <thead>
     <tr>
@@ -23,12 +35,6 @@
         </th>
         <th>
             @Html.DisplayNameFor(model => model.Image)
-        </th>
-        <th>
-            @Html.DisplayNameFor(model => model.CreatedAt)
-        </th>
-        <th>
-            @Html.DisplayNameFor(model => model.UpdatedAt)
         </th>
         <th></th>
     </tr>
@@ -47,13 +53,7 @@
                 @Html.DisplayFor(modelItem => item.Obtained)
             </td>
             <td>
-                <img src="@Html.DisplayFor(modelItem => item.Image)" class="w-100" alt=""/>
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.CreatedAt)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.UpdatedAt)
+                <img src="@Html.DisplayFor(modelItem => item.Image)" class="w-50" alt=""/>
             </td>
             <td>
                 <a asp-action="Edit" asp-route-id="@item.Id">Edit</a> |
@@ -63,4 +63,13 @@
         </tr>
     }
     </tbody>
+    <br/>
 </table>
+
+@Html.PagedListPager(Model as IPagedList, page => Url.Action("Index", new { page }),
+    new PagedListRenderOptions
+    {
+        UlElementClasses = new[] { "pagination", "justify-content-center" },
+        LiElementClasses = new[] { "page-item" },
+        PageClasses = new[] { "page-link" }
+    })

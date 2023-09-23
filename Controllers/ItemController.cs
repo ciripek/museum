@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using museum.Data;
 using museum.Models;
+using X.PagedList;
 
 namespace museum.Controllers;
 
@@ -15,24 +16,33 @@ public class ItemController : Controller
     }
 
     // GET: Item
-    public async Task<IActionResult> Index()
+    public async Task<IActionResult> Index(int? page)
     {
-        return _context.Item != null
-            ? View(await _context.Item
-                .OrderByDescending(item => item.Obtained)
-                .ToListAsync())
-            : Problem("Entity set 'ApplicationDbContext.Item'  is null.");
+        page ??= 1;
+        var items = await _context.Item
+            .Select(item => new Item
+            {
+                Id = item.Id,
+                Name = item.Name,
+                Description = item.Description,
+                Obtained = item.Obtained,
+                Image = item.Image
+            })
+            .OrderByDescending(item => item.Obtained)
+            .ToPagedListAsync(page, 25);
+
+        return View(items);
     }
 
     // GET: Item/Details/5
     public async Task<IActionResult> Details(int? id)
     {
-        if (id == null || _context.Item == null) return NotFound();
+        if (id == null) return NotFound();
 
         var item = await _context
             .Item
             .Include(item1 => item1.Labels)
-            .Include(item1 => item1.Comments)!
+            .Include(item1 => item1.Comments)
             .ThenInclude(comment => comment.ApplicationUser)
             .Where(item1 => item1.Id == id)
             .FirstOrDefaultAsync(m => m.Id == id);
@@ -54,20 +64,17 @@ public class ItemController : Controller
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Create([Bind("Id,Name,Description,Obtained,Image,CreatedAt,UpdatedAt")] Item item)
     {
-        if (ModelState.IsValid)
-        {
-            _context.Add(item);
-            await _context.SaveChangesAsync();
-            return RedirectToAction(nameof(Index));
-        }
+        if (!ModelState.IsValid) return View(item);
 
-        return View(item);
+        _context.Add(item);
+        await _context.SaveChangesAsync();
+        return RedirectToAction(nameof(Index));
     }
 
     // GET: Item/Edit/5
     public async Task<IActionResult> Edit(int? id)
     {
-        if (id == null || _context.Item == null) return NotFound();
+        if (id == null) return NotFound();
 
         var item = await _context.Item.FindAsync(id);
         if (item == null) return NotFound();
@@ -105,7 +112,7 @@ public class ItemController : Controller
     // GET: Item/Delete/5
     public async Task<IActionResult> Delete(int? id)
     {
-        if (id == null || _context.Item == null) return NotFound();
+        if (id == null) return NotFound();
 
         var item = await _context.Item
             .FirstOrDefaultAsync(m => m.Id == id);
@@ -120,7 +127,6 @@ public class ItemController : Controller
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> DeleteConfirmed(int id)
     {
-        if (_context.Item == null) return Problem("Entity set 'ApplicationDbContext.Item'  is null.");
         var item = await _context.Item.FindAsync(id);
         if (item != null) _context.Item.Remove(item);
 
@@ -130,6 +136,6 @@ public class ItemController : Controller
 
     private bool ItemExists(int id)
     {
-        return (_context.Item?.Any(e => e.Id == id)).GetValueOrDefault();
+        return _context.Item.Any(e => e.Id == id);
     }
 }

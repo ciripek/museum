@@ -18,11 +18,11 @@ internal class DbInitializer
         var items = new Faker<Item>()
             .RuleFor(o => o.Name, f => f.Random.Word())
             .RuleFor(o => o.Description, f => f.Lorem.Text())
-            .RuleFor(o => o.Obtained, () => DateTime.Today)
+            .RuleFor(o => o.Obtained, f => f.Date.Recent(1000))
             .RuleFor(o => o.Image, faker => faker.Image.PicsumUrl())
             .RuleFor(o => o.Labels, () => new List<Label>())
             .RuleFor(o => o.Comments, () => new List<Comment>())
-            .Generate(15);
+            .Generate(500);
 
 
         var labels = new Faker<Label>()
@@ -30,7 +30,7 @@ internal class DbInitializer
             .RuleFor(label => label.Color, faker => faker.Internet.Color())
             .RuleFor(label => label.Display, faker => faker.Random.Bool())
             .RuleFor(label => label.Items, () => new List<Item>())
-            .Generate(15);
+            .Generate(500);
 
 
         var random = new Random();
@@ -46,7 +46,7 @@ internal class DbInitializer
 
         var comments = new Faker<Comment>()
             .RuleFor(comment => comment.Text, f => f.Lorem.Text())
-            .Generate(25);
+            .Generate(2500);
 
         var userid = 1;
         var users = new Faker<ApplicationUser>()
@@ -56,7 +56,7 @@ internal class DbInitializer
             .RuleFor(user => user.UserName, () => $"user{userid++}@szerveroldali.hu")
             .RuleFor(user => user.NormalizedUserName, () => $"user{userid++}@szerveroldali.hu".ToUpper())
             .RuleFor(user => user.Comments, () => new List<Comment>())
-            .Generate(10);
+            .Generate(50);
 
         var admin = new ApplicationUser
         {
