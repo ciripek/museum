@@ -37,18 +37,40 @@ public class ItemController : Controller
     // GET: Item/Details/5
     public async Task<IActionResult> Details(int? id)
     {
-        if (id == null) return NotFound();
+        if (id == null) return NotFound("The id is null");
 
-        var item = await _context
+        var itemObject = await _context
             .Item
-            .Include(item1 => item1.Labels)
-            .Include(item1 => item1.Comments)
-            .ThenInclude(comment => comment.ApplicationUser)
-            .Where(item1 => item1.Id == id)
-            .FirstOrDefaultAsync(m => m.Id == id);
-        if (item == null) return NotFound();
+            .Select(item => new Item
+            {
+                Id = item.Id,
+                Name = item.Name,
+                Description = item.Description,
+                Obtained = item.Obtained,
+                Image = item.Image,
+                Labels = item.Labels.Select(label => new Label
+                {
+                    Name = label.Name,
+                    Color = label.Color,
+                    Display = label.Display
+                }).ToList(),
 
-        return View(item);
+                Comments = item.Comments.Select(comment => new Comment
+                {
+                    Text = comment.Text,
+                    Item = null!,
+                    ApplicationUser = new ApplicationUser
+                    {
+                        Email = comment.ApplicationUser.Email,
+                        Id = comment.ApplicationUser.Id
+                    }
+                }).ToList()
+            })
+            .AsSplitQuery()
+            .FirstOrDefaultAsync(m => m.Id == id);
+        if (itemObject == null) return NotFound($"Can't find id with {id} value");
+
+        return View(itemObject);
     }
 
     // GET: Item/Create
