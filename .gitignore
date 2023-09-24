@@ -277,5 +277,5 @@ _[Ss]cripts
 *.dot[Cc]over
 
 
-Images/*
-!Images/.gitkeep
+wwwroot/images/*
+!wwwroot/images/.gitkeep

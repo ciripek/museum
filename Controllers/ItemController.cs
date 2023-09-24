@@ -103,8 +103,8 @@ public class ItemController : Controller
         if (files.Count > 0)
         {
             var file = files[0];
-            var fileName = Path.Combine("Images", Path.GetFileName(file.FileName));
-            var filePath = Path.Combine(_hostingEnvironment.ContentRootPath, fileName);
+            var fileName = Path.Combine("images", Path.GetFileName(file.FileName));
+            var filePath = Path.Combine(_hostingEnvironment.WebRootPath, fileName);
             if (file.Length > 0 && !System.IO.File.Exists(filePath))
             {
                 await using var stream = System.IO.File.Create(filePath);
@@ -137,7 +137,7 @@ public class ItemController : Controller
     [HttpPost]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Edit(int id,
-        [Bind("Id,Name,Description,Obtained,Image,CreatedAt,UpdatedAt")]
+        [Bind("Id,Name,Description,Obtained,Image,CreatedAt")]
         Item item)
     {
         if (!await IsAdmin()) return View(nameof(Index));
@@ -145,6 +145,22 @@ public class ItemController : Controller
         if (id != item.Id) return NotFound();
 
         if (!ModelState.IsValid) return View(item);
+
+        var files = Request.Form.Files;
+
+        if (files.Count > 0)
+        {
+            var file = files[0];
+            var fileName = Path.Combine("images", Path.GetFileName(file.FileName));
+            var filePath = Path.Combine(_hostingEnvironment.WebRootPath, fileName);
+            if (file.Length > 0 && !System.IO.File.Exists(filePath))
+            {
+                await using var stream = System.IO.File.Create(filePath);
+                await file.CopyToAsync(stream);
+            }
+
+            item.Image = fileName;
+        }
 
         try
         {
