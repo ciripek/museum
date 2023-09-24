@@ -19,9 +19,20 @@ public class LabelController : Controller
     }
 
     // GET: Label
-    public async Task<IActionResult> Index()
+    public async Task<IActionResult> Index(int? page)
     {
-        return View(await _context.Label.ToListAsync());
+        var labels = await _context
+            .Label
+            .Select(label =>
+                new Label
+                {
+                    Color = label.Color,
+                    Display = label.Display,
+                    Id = label.Id,
+                    Name = label.Name
+                }
+            ).ToPagedListAsync(page, 30);
+        return View(labels);
     }
 
     // GET: Label/Details/5
