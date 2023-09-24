@@ -1,0 +1,61 @@
+@using Microsoft.AspNetCore.Identity
+@model IEnumerable<Label>
+@inject UserManager<ApplicationUser> UserManager
+
+@{
+    ViewData["Title"] = "Index";
+    var user = await UserManager.GetUserAsync(User);
+}
+
+<h1>Index</h1>
+
+<p>
+    <a asp-action="Create">Create New</a>
+</p>
+<table class="table">
+    <thead>
+    <tr>
+        <th>
+            @Html.DisplayNameFor(model => model.Name)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.Display)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.Color)
+        </th>
+        <th></th>
+    </tr>
+    </thead>
+    <tbody>
+    @foreach (var label in Model)
+    {
+        <tr>
+            <td>
+                @Html.DisplayFor(modelItem => label.Name)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => label.Display)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => label.Color)
+            </td>
+            @if (user?.IsAdmin ?? false)
+            {
+                <td>
+                    <a asp-action="Details" asp-route-id="@label.Id">Details</a> |
+                    <a asp-action="Edit" asp-route-id="@label.Id">Edit</a> |
+                    <a asp-action="Delete" asp-route-id="@label.Id">Delete</a>
+                </td>
+            }
+            else
+            {
+                <td>
+                    <a asp-action="Details" asp-route-id="@label.Id">Details</a>
+                </td>
+            }
+
+        </tr>
+    }
+    </tbody>
+</table>
