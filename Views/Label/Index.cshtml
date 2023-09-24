@@ -18,10 +18,12 @@
 }
 
 <h1>Index</h1>
-
-<p>
-    <a asp-action="Create">Create New</a>
-</p>
+@if (user is { IsAdmin:true })
+{
+    <p>
+        <a asp-action="Create">Create New</a>
+    </p>
+}
 
 @paging
 <table class="table">
@@ -52,7 +54,7 @@
             <td>
                 @Html.DisplayFor(modelItem => label.Color)
             </td>
-            @if (user?.IsAdmin ?? false)
+            @if (user is { IsAdmin:true })
             {
                 <td>
                     <a asp-action="Details" asp-route-id="@label.Id">Details</a> |

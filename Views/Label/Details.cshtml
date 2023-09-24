@@ -1,10 +1,15 @@
 @using X.PagedList.Mvc.Core
 @using X.PagedList.Web.Common
+@using Microsoft.AspNetCore.Identity
 @using X.PagedList
 @model Tuple<Label, IEnumerable<Item>>
+@inject UserManager<ApplicationUser> UserManager
+
 
 @{
     ViewData["Title"] = "Details";
+    var user = await UserManager.GetUserAsync(User);
+
 }
 
 <h1>Details</h1>
@@ -78,11 +83,20 @@
             <td>
                 <img src="@Html.DisplayFor(modelItem => item.Image)" class="w-50" alt=""/>
             </td>
-            <td>
-                <a asp-controller="Item" asp-action="Edit" asp-route-id="@item.Id">Edit</a> |
-                <a asp-controller="Item" asp-action="Details" asp-route-id="@item.Id">Details</a> |
-                <a asp-controller="Item" asp-action="Delete" asp-route-id="@item.Id">Delete</a>
-            </td>
+            @if (user is { IsAdmin:true })
+            {
+                <td>
+                    <a asp-controller="Item" asp-action="Edit" asp-route-id="@item.Id">Edit</a> |
+                    <a asp-controller="Item" asp-action="Details" asp-route-id="@item.Id">Details</a> |
+                    <a asp-controller="Item" asp-action="Delete" asp-route-id="@item.Id">Delete</a>
+                </td>
+            }
+            else
+            {
+                <td>
+                    <a asp-controller="Item" asp-action="Details" asp-route-id="@item.Id">Details</a>
+                </td>
+            }
         </tr>
     }
     </tbody>

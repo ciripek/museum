@@ -13,7 +13,7 @@ public class Item : IBaseEntity
 
     [DataType(DataType.Date)] public DateTime Obtained { get; set; }
 
-    public string? Image { get; set; }
+    [DataType(DataType.Upload)] public string? Image { get; set; }
 
     public ICollection<Comment> Comments { get; set; } = new List<Comment>();
     public ICollection<Label> Labels { get; set; } = new List<Label>();

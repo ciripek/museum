@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using museum.Data;
@@ -9,10 +10,16 @@ namespace museum.Controllers;
 public class ItemController : Controller
 {
     private readonly ApplicationDbContext _context;
+    private readonly IWebHostEnvironment _hostingEnvironment;
+    private readonly UserManager<ApplicationUser> _userManager;
 
-    public ItemController(ApplicationDbContext context)
+
+    public ItemController(ApplicationDbContext context, UserManager<ApplicationUser> userManager,
+        IWebHostEnvironment hostingEnvironment)
     {
         _context = context;
+        _userManager = userManager;
+        _hostingEnvironment = hostingEnvironment;
     }
 
     // GET: Item
@@ -85,9 +92,27 @@ public class ItemController : Controller
     // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> Create([Bind("Id,Name,Description,Obtained,Image,CreatedAt,UpdatedAt")] Item item)
+    public async Task<IActionResult> Create([Bind("Id,Name,Description,Obtained,Image,CreatedAt")] Item item)
     {
+        if (!await IsAdmin()) return View(nameof(Index));
+
+        var files = Request.Form.Files;
+
         if (!ModelState.IsValid) return View(item);
+
+        if (files.Count > 0)
+        {
+            var file = files[0];
+            var fileName = Path.Combine("Images", Path.GetFileName(file.FileName));
+            var filePath = Path.Combine(_hostingEnvironment.ContentRootPath, fileName);
+            if (file.Length > 0 && !System.IO.File.Exists(filePath))
+            {
+                await using var stream = System.IO.File.Create(filePath);
+                await file.CopyToAsync(stream);
+            }
+
+            item.Image = fileName;
+        }
 
         _context.Add(item);
         await _context.SaveChangesAsync();
@@ -97,6 +122,8 @@ public class ItemController : Controller
     // GET: Item/Edit/5
     public async Task<IActionResult> Edit(int? id)
     {
+        if (!await IsAdmin()) return View(nameof(Index));
+
         if (id == null) return NotFound();
 
         var item = await _context.Item.FindAsync(id);
@@ -113,6 +140,8 @@ public class ItemController : Controller
         [Bind("Id,Name,Description,Obtained,Image,CreatedAt,UpdatedAt")]
         Item item)
     {
+        if (!await IsAdmin()) return View(nameof(Index));
+
         if (id != item.Id) return NotFound();
 
         if (!ModelState.IsValid) return View(item);
@@ -135,6 +164,8 @@ public class ItemController : Controller
     // GET: Item/Delete/5
     public async Task<IActionResult> Delete(int? id)
     {
+        if (!await IsAdmin()) return View(nameof(Index));
+
         if (id == null) return NotFound();
 
         var item = await _context.Item
@@ -150,6 +181,8 @@ public class ItemController : Controller
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> DeleteConfirmed(int id)
     {
+        if (!await IsAdmin()) return View(nameof(Index));
+
         var item = await _context.Item.FindAsync(id);
         if (item != null) _context.Item.Remove(item);
 
@@ -160,5 +193,10 @@ public class ItemController : Controller
     private bool ItemExists(int id)
     {
         return _context.Item.Any(e => e.Id == id);
+    }
+
+    private async Task<bool> IsAdmin()
+    {
+        return await _userManager.GetUserAsync(User) is { IsAdmin: true };
     }
 }

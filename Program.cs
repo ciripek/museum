@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.FileProviders;
 using museum.Data;
 using museum.Models;
 using museum.Seed;
@@ -33,6 +34,13 @@ else
 
 app.UseHttpsRedirection();
 app.UseStaticFiles();
+
+app.UseStaticFiles(new StaticFileOptions
+{
+    FileProvider = new PhysicalFileProvider(
+        Path.Combine(builder.Environment.ContentRootPath, "Images")),
+    RequestPath = "/Images"
+});
 
 app.UseRouting();
 
