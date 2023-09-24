@@ -64,6 +64,7 @@ public class LabelController : Controller
                 Name = item1.Name,
                 Obtained = item1.Obtained
             })
+            .OrderByDescending(item => item.Obtained)
             .ToPagedListAsync(page, 12);
 
         var tuple = new Tuple<Label, IEnumerable<Item>>(label, items);
