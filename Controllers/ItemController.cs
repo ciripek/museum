@@ -1,8 +1,10 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using museum.Data;
 using museum.Models;
+using NuGet.Packaging;
 using X.PagedList;
 
 namespace museum.Controllers;
@@ -84,6 +86,7 @@ public class ItemController : Controller
     // GET: Item/Create
     public IActionResult Create()
     {
+        ViewBag.Labels = new SelectList(_context.Label.ToList(), "Id", "Name");
         return View();
     }
 
@@ -92,13 +95,16 @@ public class ItemController : Controller
     // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> Create([Bind("Id,Name,Description,Obtained,Image,CreatedAt")] Item item)
+    public async Task<IActionResult> Create([Bind("Id,Name,Description,Obtained,Image,CreatedAt,Labels")] Item item)
     {
         if (!await IsAdmin()) return View(nameof(Index));
 
         var files = Request.Form.Files;
 
         if (!ModelState.IsValid) return View(item);
+
+        var items = Request.Form["Labels"].ToList().ConvertAll(int.Parse!);
+        var labels = await _context.Label.Where(label => items.Contains(label.Id)).ToListAsync();
 
         if (files.Count > 0)
         {
@@ -113,6 +119,8 @@ public class ItemController : Controller
 
             item.Image = fileName;
         }
+
+        item.Labels = labels;
 
         _context.Add(item);
         await _context.SaveChangesAsync();
@@ -126,7 +134,15 @@ public class ItemController : Controller
 
         if (id == null) return NotFound();
 
-        var item = await _context.Item.FindAsync(id);
+        ViewBag.Labels = await _context.Label.Select(label => new
+        {
+            label.Id,
+            label.Name
+        }).ToListAsync();
+
+        var item = await _context.Item
+            .Include(item1 => item1.Labels)
+            .FirstOrDefaultAsync(item1 => item1.Id == id);
         if (item == null) return NotFound();
         return View(item);
     }
@@ -137,7 +153,7 @@ public class ItemController : Controller
     [HttpPost]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Edit(int id,
-        [Bind("Id,Name,Description,Obtained,Image,CreatedAt")]
+        [Bind("Id,Name,Description,Obtained,Image,CreatedAt,Labels")]
         Item item)
     {
         if (!await IsAdmin()) return View(nameof(Index));
@@ -147,7 +163,6 @@ public class ItemController : Controller
         if (!ModelState.IsValid) return View(item);
 
         var files = Request.Form.Files;
-
         if (files.Count > 0)
         {
             var file = files[0];
@@ -162,9 +177,27 @@ public class ItemController : Controller
             item.Image = fileName;
         }
 
+        var currentItem = await _context.Item
+            .Include(item1 => item1.Labels)
+            .FirstOrDefaultAsync(item1 => item1.Id == id);
+
+        if (currentItem == null) return View(item);
+
+        var items = Request.Form["Labels"].ToList().ConvertAll(int.Parse!);
+        var labels = await _context.Label.Where(label => items.Contains(label.Id)).ToListAsync();
+
+        currentItem.Id = item.Id;
+        currentItem.Name = item.Name;
+        currentItem.Description = item.Description;
+        currentItem.Obtained = item.Obtained;
+        if (item.Image is not null) currentItem.Image = item.Image;
+        currentItem.CreatedAt = item.CreatedAt;
+        currentItem.Labels.Clear();
+        currentItem.Labels.AddRange(labels);
+
         try
         {
-            _context.Update(item);
+            _context.Update(currentItem);
             await _context.SaveChangesAsync();
         }
         catch (DbUpdateConcurrencyException)
