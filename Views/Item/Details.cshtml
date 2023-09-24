@@ -39,7 +39,10 @@
         {
             @if (label.Display)
             {
-                <span class="badge col-sm-2" style="background-color: @label.Color">@label.Name</span>
+                <a asp-controller="Label" asp-action="Details" asp-route-id="@label.Id" class="badge col-sm-2"
+                   style="text-decoration:none;background-color: @label.Color">
+                    @label.Name
+                </a>
             }
         }
 

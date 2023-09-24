@@ -50,6 +50,7 @@ public class ItemController : Controller
                 Image = item.Image,
                 Labels = item.Labels.Select(label => new Label
                 {
+                    Id = label.Id,
                     Name = label.Name,
                     Color = label.Color,
                     Display = label.Display
